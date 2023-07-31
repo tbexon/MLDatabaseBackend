@@ -95,17 +95,17 @@ def insertRows(cursor, table_name, column_names, values):
     print(cursor.execute("SELECT * from Fixtures").fetchall())
 
 def InsertFixRow(cursor, table_name, column_names, values):
-    sql = f"INSERT INTO {table_name}({cfg.fixture_name_fld},{cfg.manufacturer_fld}," \
-          f"{cfg.wattage_fld},{cfg.weight_fld},{cfg.userID_fld}" \
-          f"VALUES (?,?,?,?,?)"
+    cols = f"{cfg.fixture_name_fld},{cfg.manf_ID_fld}, {cfg.wattage_fld},{cfg.weight_fld},{cfg.userID_fld}"
+    sql = f"INSERT INTO {table_name} ({cols} ) VALUES (?,?,?,?,?)"
     for eachRow in values:
         try:
-            data = (eachRow[cfg.fixture_name_fld],eachRow[cfg.manufacturer_fld],eachRow[cfg.wattage_fld],
+            data = (eachRow[cfg.fixture_name_fld],eachRow[cfg.manf_ID_fld],eachRow[cfg.wattage_fld],
                     eachRow[cfg.weight_fld], eachRow[cfg.userID_fld])
             print(data)
             cursor.execute(sql,data)
-        except:
+        except Exception as e:
             print("Error!")
+            print(e)
 
 
 def turnListintoString(list_to_convert, **kwargs):
@@ -156,7 +156,7 @@ def CreateMLDB():
                 cfg.userID_fld: '1'
                }]
     createTable(cursor,cfg.FIXTURE_TBL_NAME,col_names,col_types)
-    insertRows(cursor, cfg.FIXTURE_TBL_NAME, col_names, values)
+    InsertFixRow(cursor, cfg.FIXTURE_TBL_NAME, col_names, values)
     cursor.close()
 
 
