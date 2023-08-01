@@ -103,8 +103,48 @@ def InsertFixRow(cursor, table_name, column_names, values):
             data = (eachRow[cfg.fixture_name_fld],eachRow[cfg.manf_ID_fld],eachRow[cfg.wattage_fld],
                     eachRow[cfg.weight_fld], eachRow[cfg.userID_fld])
             print(data)
-            cursor.execute(sql,data)
-            cursor.commit()
+            cursor.execute(sql,data)  # Inserts rows into DB
+        except Exception as e:
+            print("Error!")
+            print(e)
+
+def InsertMafRow(cursor, table_name, column_names, values):
+    cols = f"{cfg.manf_ID_fld},{cfg.manufacturer_fld}, {cfg.userID_fld}"
+    sql = f"INSERT INTO {table_name} ({cols} ) VALUES (?,?,?)"
+    for eachRow in values:
+        try:
+            data = (eachRow[cfg.manf_ID_fld],eachRow[cfg.manufacturer_fld],eachRow[cfg.userID_fld])
+            print(data)
+            cursor.execute(sql,data)  # Inserts rows into DB
+        except Exception as e:
+            print("Error!")
+            print(e)
+
+
+def InsertUserRow(cursor, table_name, column_names, values):
+    cols = f"{cfg.userID_fld},{cfg.username_fld}, {cfg.email_fld}, {cfg.password_fld}, {cfg.admin_fld}, {cfg.edit_fld}, " \
+           f" {cfg.add_fld},{cfg.view_fld},{cfg.manufacturer_grp_fld}"
+    sql = f"INSERT INTO {table_name} ({cols} ) VALUES (?,?,?,?,?,?,?,?,?)"
+    for eachRow in values:
+        try:
+            data = (eachRow[cfg.userID_fld],eachRow[cfg.username_fld],eachRow[cfg.email_fld],eachRow[cfg.password_fld]
+                    ,eachRow[cfg.admin_fld],eachRow[cfg.edit_fld],eachRow[cfg.add_fld],eachRow[cfg.view_fld],eachRow[cfg.manufacturer_grp_fld])
+            print(data)
+            cursor.execute(sql,data)  # Inserts rows into DB
+        except Exception as e:
+            print("Error!")
+            print(e)
+
+
+def InsertDMXProfRow(cursor, table_name, column_names, values):
+    cols = f"{cfg.DMXprofID_fld},{cfg.fixture_ID_fld}, {cfg.prof_name}, {cfg.dmxcnt_fld}, {cfg.userID_fld}"
+    sql = f"INSERT INTO {table_name} ({cols} ) VALUES (?,?,?,?,?)"
+    for eachRow in values:
+        try:
+            data = (eachRow[cfg.DMXprofID_fld],eachRow[cfg.fixture_ID_fld],eachRow[cfg.prof_name],eachRow[cfg.dmxcnt_fld]
+                    ,eachRow[cfg.userID_fld])
+            print(data)
+            cursor.execute(sql,data)  # Inserts rows into DB
         except Exception as e:
             print("Error!")
             print(e)
@@ -127,8 +167,8 @@ def turnListintoString(list_to_convert, **kwargs):
         stringtooutput += f'{eachString}{separator}'
     return stringtooutput
 
-def CreateMLDB():
-    cursor, connection = initConnection(cfg.DBFILEPATH)
+
+def CreateMLDB(cursor,connection):
     col_names = [cfg.fixture_ID_fld,
                  cfg.fixture_name_fld,
                  cfg.manf_ID_fld,
@@ -159,11 +199,10 @@ def CreateMLDB():
                }]
     createTable(cursor,cfg.FIXTURE_TBL_NAME,col_names,col_types)
     InsertFixRow(cursor, cfg.FIXTURE_TBL_NAME, col_names, values)
-    cursor.close()
 
 
-def CreateManfDB():
-    cursor, connection = initConnection(cfg.DBFILEPATH)
+def CreateManfDB(cursor,connection):
+
     col_names = [cfg.manf_ID_fld,
                  cfg.manufacturer_fld,
                  cfg.userID_fld
@@ -184,12 +223,11 @@ def CreateManfDB():
                   cfg.userID_fld: '1'
               }]
     createTable(cursor, cfg.MANUFACTURER_TBL_NAME, col_names, col_types)
-    insertRows(cursor, cfg.MANUFACTURER_TBL_NAME, col_names, values)
-    cursor.close()
+    InsertMafRow(cursor, cfg.MANUFACTURER_TBL_NAME, col_names, values)
 
 
-def CreateUserDB():
-    cursor, connection = initConnection(cfg.DBFILEPATH)
+def CreateUserDB(cursor,connection):
+
     # Sets the Column Names
     col_names = [cfg.userID_fld,
                  cfg.username_fld,
@@ -222,10 +260,13 @@ def CreateUserDB():
                cfg.manufacturer_grp_fld: '1',
                }]
     createTable(cursor,cfg.USERS_TBL_NAME,col_names,col_types)
-    insertRows(cursor, cfg.USERS_TBL_NAME, col_names, values)
-    cursor.close()
+    InsertUserRow(cursor, cfg.USERS_TBL_NAME, col_names, values)
 
 if __name__ == '__main__':
-    CreateMLDB()
-    CreateUserDB()
-    CreateManfDB()
+    cursor, connection = initConnection(cfg.DBFILEPATH)
+    CreateMLDB(cursor,connection)
+    CreateUserDB(cursor,connection)
+    CreateManfDB(cursor,connection)
+    cursor.close()
+    connection.commit()  # Commits Changes
+    connection.close()
