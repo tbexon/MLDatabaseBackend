@@ -94,6 +94,7 @@ def insertRows(cursor, table_name, column_names, values):
     cursor.executemany(f"INSERT INTO {table_name} ({column[:-1]}) VALUES ({turnListintoString(value_cols)[:-1]})",values)
     print(cursor.execute("SELECT * from Fixtures").fetchall())
 
+
 def InsertFixRow(cursor, table_name, column_names, values):
     cols = f"{cfg.fixture_name_fld},{cfg.manf_ID_fld}, {cfg.wattage_fld},{cfg.weight_fld},{cfg.userID_fld}"
     sql = f"INSERT INTO {table_name} ({cols} ) VALUES (?,?,?,?,?)"
@@ -103,6 +104,7 @@ def InsertFixRow(cursor, table_name, column_names, values):
                     eachRow[cfg.weight_fld], eachRow[cfg.userID_fld])
             print(data)
             cursor.execute(sql,data)
+            cursor.commit()
         except Exception as e:
             print("Error!")
             print(e)
