@@ -1,6 +1,6 @@
 # Global Variables
 
-DBNAME = 'MLDatabase'
+DBNAME = 'MLDatabase.db'
 DBFILEPATH = f"DB/{DBNAME}"
 
 # Table Names
