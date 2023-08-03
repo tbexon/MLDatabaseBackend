@@ -195,8 +195,12 @@ def GetFixtureByID(Fix_ID):
         print(f"Error Message: {e}")
     # Get specific Fixture Data as Tuple based on Fixture ID
     fixture_data = GetRowByID(cursor,Fix_ID,cfg.FIXTURE_TBL_NAME,cfg.fixture_ID_fld)
+
     final_data = {}  # Dict containing the final data to be returned
     ind = 0
+    if not fixture_data:
+        # If Fixture Data is empty, returns blank dictionary
+        return final_data
     for eachCol in cfg.fixture_col_names:
         # Convert raw Tuple data into a Dict where each Column name is the key
         final_data.update({eachCol:fixture_data[0][ind]})
