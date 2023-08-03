@@ -111,6 +111,21 @@ def GetRowByID(cursor,ID,table_name,ID_col_name):
     output = cursor.fetchall()  # Gets results of query
     return output
 
+def GetAllRows(cursor,table_name):
+    """
+    Gets all rows in specified table
+    :param cursor: obj
+        Cursor object for interacting with SQL
+    :param table_name: str
+        Name of Table to get data from
+    :return: tuple
+    """
+    sql = f"SELECT * FROM {table_name}"
+    cursor.execute(sql)  # Querys DB
+    output = cursor.fetchall()  # Gets results of query
+    return output
+
+
 def InsertFixtureIntoDB(fixture_val_dict):
     """
     Inserts a new fixture into Fixture Table
@@ -211,6 +226,44 @@ def GetFixtureByID(Fix_ID):
 
     user_data = GetUserByID(final_data[cfg.userID_fld])
     final_data.update({cfg.username_fld:user_data[cfg.username_fld]})
+    return final_data
+
+def GetAllFixtures():
+    """
+    Gets all rows in the Fixture Table
+    :return: list
+        Dict where each row is a dict of a fixtures values
+    """
+    try:
+        cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
+    except Exception as e:
+        print(f"Failed to initialise DB Connection!")
+        print(f"Error Message: {e}")
+    fixture_data = GetAllRows(cursor,cfg.FIXTURE_TBL_NAME)  # Gets all rows in Fixture Table
+    final_data = []
+
+    for eachRow in fixture_data:
+        # For Each Row in Fixture Table
+        cur_row_data = {}  # Dict to store current rows data in
+        ind = 0
+        for eachCol in cfg.fixture_col_names:
+            # For Each Column within Fixture Table
+            # Convert raw Tuple data into a Dict where each Column name is the key
+            cur_row_data.update({eachCol:eachRow[ind]})
+            ind += 1
+
+        # Gets the manufacturers string name from the ID
+        manufacturer_data = GetManufacturerByID(cur_row_data[cfg.manf_ID_fld])  # Gets the Manufacturers name
+        cur_row_data.update(  # Adds to current Row
+            {cfg.manufacturer_fld: manufacturer_data[cfg.manufacturer_fld]})  # Adds Manufacturers name to fixture data
+
+        # Gets the Username string name from the ID
+        user_data = GetUserByID(cur_row_data[cfg.userID_fld])
+        cur_row_data.update({cfg.username_fld: user_data[cfg.username_fld]})
+
+        # Adds the completed Row to final Data Dict
+        # final_data.update({cur_row_data[cfg.fixture_ID_fld] :cur_row_data})
+        final_data.append(cur_row_data)
     return final_data
 
 if __name__ == '__main__':
