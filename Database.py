@@ -112,6 +112,12 @@ def GetRowByID(cursor,ID,table_name,ID_col_name):
     output = cursor.fetchall()  # Gets results of query
     return output
 
+def GetRowByString(cursor,ID,table_name,ID_col_name):
+    sql = f"SELECT * FROM {table_name} WHERE {ID_col_name} = '{ID}'"
+    cursor.execute(sql)  # Querys DB
+    output = cursor.fetchall()  # Gets results of query
+    return output
+
 def GetAllRows(cursor,table_name):
     """
     Gets all rows in specified table
@@ -235,6 +241,17 @@ def GetManufacturerByID(Manf_ID):
     return final_data
 
 
+def GetManufacturerIDFromName(Manf_string,cursor):
+    """
+    Gets the Manufacturers ID based off the manufacturers name
+    :param Manf_string: str
+    :param cursor: cursor object
+    :return: string
+    """
+    manf_data = GetRowByString(cursor,Manf_string,cfg.MANUFACTURER_TBL_NAME,cfg.manufacturer_fld)
+    manf_id = manf_data[0][0]
+    return manf_id
+
 def GetUserByID(User_ID):
     """
     Gets a specific User's row from DB based on User ID
@@ -319,18 +336,26 @@ def GetFixtureImgURL(fix_id):
     return final_path
 
 
-def GetAllFixtures():
+def GetAllFixtures(**kwargs):
     """
     Gets all rows in the Fixture Table
     :return: list
         Dict where each row is a dict of a fixtures values
     """
+    if 'manf' in kwargs:
+        manf_string = kwargs['manf']
+    else:
+        manf_string = ""
     try:
         cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
     except Exception as e:
         print(f"Failed to initialise DB Connection!")
         print(f"Error Message: {e}")
-    fixture_data = GetAllRows(cursor,cfg.FIXTURE_TBL_NAME)  # Gets all rows in Fixture Table
+    if manf_string != "":
+        manf_id = GetManufacturerIDFromName(manf_string,cursor)  # Gets the manufacturer ID
+        fixture_data = GetRowByString(cursor,manf_id,cfg.FIXTURE_TBL_NAME,cfg.manf_ID_fld)
+    else:
+        fixture_data = GetAllRows(cursor,cfg.FIXTURE_TBL_NAME)  # Gets all rows in Fixture Table
 
     # Converts Raw Tuple to Dict, and adds Manufacturer and USerID
     final_data = ConvertFixtureTupleToFixtureDict(fixture_data)
@@ -355,13 +380,23 @@ def GetAllManufacturers():
 
     return final_data
 
-def GetFixFromSearchString(search_string):
+def GetFixFromSearchString(search_string,**kwargs):
+    if 'manf' in kwargs:
+        manf_string = kwargs['manf']
+    else:
+        manf_string = ""
     try:
         cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
     except Exception as e:
         print(f"Failed to initialise DB Connection!")
         print(f"Error Message: {e}")
-    sql = f"SELECT * FROM 'Fixtures' WHERE InstType LIKE \"%{search_string}%\";"
+    if manf_string != "":
+        manf_id = GetManufacturerIDFromName(manf_string,cursor)  # Gets the manufacturer ID
+        print(f"manf_id: {manf_id}")
+        sql = f"SELECT * FROM 'Fixtures' WHERE InstType LIKE \"%{search_string}%\" AND {cfg.manf_ID_fld} = {manf_id};"
+        print(sql)
+    else:
+        sql = f"SELECT * FROM 'Fixtures' WHERE InstType LIKE \"%{search_string}%\";"
     cursor.execute(sql)
 
     output = cursor.fetchall()
