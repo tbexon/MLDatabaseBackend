@@ -1,6 +1,7 @@
 from flask import Flask,jsonify, request
 import config as cfg
 from Database import GetFixtureByID, GetAllFixtures, GetFixFromSearchString
+import os
 
 
 app = Flask(__name__)  # Create Flask Server
@@ -27,6 +28,18 @@ def GetFixture():
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
+@app.route("/FixImg/<int:fix_id>")  #{cfg.fix_img_API_Dir}
+def ServeImg(fix_id):
+
+    img_FilePath = os.path.join(os.getcwd(), cfg.fixture_img_FilePath)
+    test_FP = os.path.join(img_FilePath, f"{fix_id}.png")
+    if os.path.isfile(test_FP) is True:
+        print(f"Specific Fixture image specified sending {test_FP}")
+        return app.send_static_file(f"{fix_id}.png")
+
+    else:
+        print(f"No Fixture image found updating to {cfg.stock_image_FileName}")
+        return app.send_static_file(cfg.stock_image_FileName)
 
 if __name__ == '__main__':
 

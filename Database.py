@@ -1,5 +1,6 @@
 import sqlite3
 import config as cfg
+import os
 
 
 def initConnection(DBFIlEPATH):
@@ -127,6 +128,12 @@ def GetAllRows(cursor,table_name):
 
 
 def ConvertFixtureTupleToFixtureDict(data):
+    """
+    Converts the raw Fixture Data from Fixture table into the final data.
+    Gets Manufacturer name from Manufacturers table, and user name from Users table.
+    :param data: tuple
+    :return:
+    """
     final_data = []
 
     for eachRow in data:
@@ -142,6 +149,9 @@ def ConvertFixtureTupleToFixtureDict(data):
             except:
                 print(f"Failed to add {eachCol} to Dict!")
                 continue
+
+        fix_img_path = GetFixtureImgURL(cur_row_data[cfg.fixture_ID_fld])  # Converts fixture ID to complete path of image
+        cur_row_data.update({cfg.img_name_fld: fix_img_path})  # Updates Image path in final data
 
         # Gets the manufacturers string name from the ID
         manufacturer_data = GetManufacturerByID(cur_row_data[cfg.manf_ID_fld])  # Gets the Manufacturers name
@@ -252,12 +262,37 @@ def GetFixtureByID(Fix_ID):
         final_data.update({eachCol:fixture_data[0][ind]})
         ind += 1
 
+    fix_img_path = GetFixtureImgURL(final_data[cfg.fixture_ID_fld])  # Converts fixture ID to complete path of image
+    final_data.update({cfg.img_name_fld:fix_img_path})  # Updates Image path in final data
+
     manufacturer_data = GetManufacturerByID(final_data[cfg.manf_ID_fld])  # Gets the Manufacturers name
     final_data.update({cfg.manufacturer_fld:manufacturer_data[cfg.manufacturer_fld]})  # Adds Manufacturers name to fixture data
 
     user_data = GetUserByID(final_data[cfg.userID_fld])
     final_data.update({cfg.username_fld:user_data[cfg.username_fld]})
     return final_data
+
+def GetFixtureImgURL(fix_id):
+    """
+    Checks if there is an image file associated with specific fixture ID, and returns the full path to said image
+    if no fixture image returns path to stock image
+    :param fix_id: str
+    :return: str
+    """
+    final_path = ''
+    final_path = os.path.join("http://127.0.0.1:5000/", cfg.fix_img_API_Dir, f"{fix_id}")
+    # img_FilePath = os.path.join(os.getcwd(),cfg.fixture_img_FilePath)
+    # test_FP = os.path.join(img_FilePath,f"{fix_id}.png")
+    # if os.path.isfile(test_FP) is True:
+    #     final_path = os.path.join("http://127.0.0.1:5000/",cfg.fix_img_API_Dir,f"{fix_id}")
+    #     #print(f"Specific Fixture image specified updating to {final_path}")
+    #
+    # else:
+    #     final_path = os.path.join("http://127.0.0.1:5000/",cfg.fix_img_API_Dir,cfg.stock_image_FileName)
+    #    # print(f"No Fixture image found updating to {final_path}")
+
+
+    return final_path
 
 
 def GetAllFixtures():

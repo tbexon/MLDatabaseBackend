@@ -11,8 +11,9 @@ MANUFACTURER_TBL_NAME = "Manufacturers"
 USERS_TBL_NAME = "Users"
 
 # Fixture Image File paths and names
-fixture_img_FilePath = "Fixture_IMGs"  # Folder where all images are stored
-stock_image_FileName = "StockImage.png"  # File name of stock image
+fixture_img_FilePath = "static"  # Folder where all images are stored
+fix_img_API_Dir = "FixImg"
+stock_image_FileName = "StockFixture.png"  # File name of stock image
 
 # Fixture Table Column Names
 fixture_ID_fld = 'FixID'
