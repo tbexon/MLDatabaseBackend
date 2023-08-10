@@ -15,6 +15,9 @@ fixture_ID_fld = 'FixID'
 fixture_name_fld = 'InstType'
 wattage_fld = 'Wattage'
 weight_fld = 'Weight'
+conn_in_fld = 'Connector_In'
+conn_out_fld = 'Connector_Out'
+reputation_fld = 'Reputation'
 
 
 # Manufactere Table Column Names
