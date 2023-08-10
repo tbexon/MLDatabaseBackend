@@ -181,10 +181,12 @@ def ConvertManufacturerTupleToManfDict(manf_data):
         cur_row_data = {}  # Dict to store current rows data in
         ind = 0
         for eachCol in cfg.manf_col_names:
-            # Convert raw Tuple data into a Dict where each Column name is the key
-            cur_row_data.update({eachCol:eachRow[ind]})
+            if eachCol == cfg.manufacturer_fld:
+                final_data.append(eachRow[ind])
+            # # Convert raw Tuple data into a Dict where each Column name is the key
+            # cur_row_data.update({eachCol:eachRow[ind]})
             ind += 1
-        final_data.append(cur_row_data)
+        # final_data.append(cur_row_data)
     return final_data
 
 
