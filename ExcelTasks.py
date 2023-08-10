@@ -22,16 +22,6 @@ def getExcelData(cursor):
     used_manf_ids = []  # List of already used manufacturers IDs
     for eachInd in df.index:
         cur_manf_id = df[Manf_ID][eachInd]
-        print(cur_manf_id)
-        # fixture_dict = {cfg.fixture_name_fld: df[InstType][eachInd],
-        #                 cfg.manf_ID_fld: cur_manf_id,
-        #                 cfg.wattage_fld: df[Watt][eachInd],
-        #                 cfg.weight_fld: df[Weight][eachInd],
-        #                 cfg.userID_fld: '1',
-        #                 cfg.conn_in_fld: df[Conn_In][eachInd],
-        #                 cfg.conn_out_fld: df[Conn_Out][eachInd],
-        #                 cfg.reputation_fld: '0'
-        #        }
         fixture_tuple = (df[InstType][eachInd],
                         int(df[Manf_ID][eachInd]),
                         df[Watt][eachInd],
