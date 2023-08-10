@@ -259,7 +259,7 @@ def CreateUserDB(cursor,connection):
                  cfg.moderate_grp_fld: 'BOOLEAN'
                  }
     values = [{cfg.userID_fld: '1',
-               cfg.username_fld: 'tbexon',
+               cfg.username_fld: 'Auto_import',
                cfg.email_fld:'tom@tb-lx.com',
                cfg.password_fld:'Test',
                cfg.admin_fld:'1',
