@@ -10,6 +10,10 @@ DMXPROF_TBL_NAME = "DMXProfiles"
 MANUFACTURER_TBL_NAME = "Manufacturers"
 USERS_TBL_NAME = "Users"
 
+# Fixture Image File paths and names
+fixture_img_FilePath = "Fixture_IMGs"  # Folder where all images are stored
+stock_image_FileName = "StockImage.png"  # File name of stock image
+
 # Fixture Table Column Names
 fixture_ID_fld = 'FixID'
 fixture_name_fld = 'InstType'
