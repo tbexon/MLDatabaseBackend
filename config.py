@@ -18,6 +18,7 @@ weight_fld = 'Weight'
 conn_in_fld = 'Connector_In'
 conn_out_fld = 'Connector_Out'
 reputation_fld = 'Reputation'
+img_name_fld = "Image_Name"
 
 
 # Manufactere Table Column Names
@@ -53,7 +54,8 @@ fixture_col_names = [fixture_ID_fld,
              userID_fld,
              conn_in_fld,
              conn_out_fld,
-             reputation_fld
+             reputation_fld,
+             img_name_fld
              ]
 
 # List of Manufacturer Table Columns Names
