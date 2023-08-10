@@ -50,7 +50,10 @@ fixture_col_names = [fixture_ID_fld,
              manf_ID_fld,
              wattage_fld,
              weight_fld,
-             userID_fld
+             userID_fld,
+             conn_in_fld,
+             conn_out_fld,
+             reputation_fld
              ]
 
 # List of Manufacturer Table Columns Names
