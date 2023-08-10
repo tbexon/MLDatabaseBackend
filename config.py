@@ -34,6 +34,7 @@ edit_fld = "edit_grp"
 add_fld = "add_grp"
 view_fld = "view_grp"
 manufacturer_grp_fld = "manufacturer_grp"
+moderate_grp_fld = "moderate_grp"
 
 
 # DMX Profile Table Column Names
