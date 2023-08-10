@@ -58,8 +58,7 @@ fixture_col_names = [fixture_ID_fld,
              userID_fld,
              conn_in_fld,
              conn_out_fld,
-             reputation_fld,
-             img_name_fld
+             reputation_fld
              ]
 
 # List of Manufacturer Table Columns Names
