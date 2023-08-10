@@ -1,6 +1,6 @@
 from flask import Flask,jsonify, request
 import config as cfg
-from Database import GetFixtureByID, GetAllFixtures, GetFixFromSearchString, GetAllManufacturers
+from Database import GetFixtureByID, GetAllFixtures, GetFixFromSearchString, GetAllManufacturers, AddFixtureToDB
 import os
 
 
@@ -37,6 +37,56 @@ def GetFixture():
     return response
 
 
+@app.route("/AddFixture")
+def AddFixture():
+    # Attempts to get all params required to add a fixture
+    InstType = request.args.get(cfg.fixture_name_fld)
+    Manf_name = request.args.get(cfg.manufacturer_fld)
+    wattage = request.args.get(cfg.wattage_fld)
+    weight = request.args.get(cfg.weight_fld)
+    user_ID = request.args.get(cfg.userID_fld)
+    conn_in = request.args.get(cfg.conn_in_fld)
+    conn_out = request.args.get(cfg.conn_out_fld)
+
+
+    # Adds all values to DB
+    fixture_dict = { cfg.fixture_name_fld: InstType,
+                    cfg.manufacturer_fld: Manf_name,
+                    cfg.wattage_fld:wattage,
+                    cfg.weight_fld: weight,
+                    cfg.userID_fld: user_ID,
+                    cfg.conn_in_fld: conn_in,
+                    cfg.conn_out_fld:conn_out
+               }
+    print(fixture_dict)
+    check, fixture_dict = PerformChecks(fixture_dict)  # Checks Fixture info for problems
+    if not check:
+        return 'Error in Fixture', 400
+    check = AddFixtureToDB(fixture_dict)
+    return "Success!", 200
+
+def PerformChecks(fixture_dict):
+    """
+    Chceks incoming fixture info for errors, and attempts to correct any errors
+    :param fixture_dict: dict
+    :return: bool, dict
+    """
+    if not CheckIfInstTypeIsBlank(fixture_dict[cfg.fixture_name_fld]):
+        return False,fixture_dict
+
+    return True,fixture_dict
+
+
+def CheckIfInstTypeIsBlank(InstType):
+    """
+    Checks if Inst Type field is Blank
+    :param InstType: str
+    :return: bool
+    """
+    if InstType == '':
+        return False
+    else:
+        return True
 @app.route("/Manufacturer", methods=['GET'])
 def GetManufacturers():
     print("API Call Received to /Manufactuer!")

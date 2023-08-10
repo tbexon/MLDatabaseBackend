@@ -407,6 +407,31 @@ def GetFixFromSearchString(search_string,**kwargs):
     return final_data
 
 
+def InsertRowIntoTable(cursor, table_name,column_names, fixture_dict):
+
+    cols = f"{cfg.fixture_name_fld},{cfg.manf_ID_fld}, {cfg.wattage_fld},{cfg.weight_fld},{cfg.userID_fld},{cfg.conn_in_fld},{cfg.conn_out_fld},{cfg.reputation_fld}"
+    columns = ', '.join(fixture_dict.keys())
+    placeholders = ', '.join(fixture_dict.values())
+    sql = f"INSERT INTO {table_name} ({columns} ) VALUES ({placeholders})"
+    print(sql)
+
+    try:
+        data = (fixture_dict[cfg.fixture_name_fld], fixture_dict[cfg.manf_ID_fld], fixture_dict[cfg.wattage_fld],
+                fixture_dict[cfg.weight_fld], fixture_dict[cfg.userID_fld],fixture_dict[cfg.conn_in_fld],
+                fixture_dict[cfg.conn_out_fld], fixture_dict[cfg.reputation_fld])
+        # print(data)
+        # cursor.execute(sql, data)  # Inserts rows into DB
+    except Exception as e:
+        print("Error!")
+        print(e)
+
+def AddFixtureToDB(fixture_dict):
+    cursor, connection = initConnection(cfg.DBFILEPATH)
+    InsertRowIntoTable(cursor,cfg.FIXTURE_TBL_NAME,cfg.fixture_col_names,fixture_dict)
+    cursor.close()
+    connection.commit()  # Commits Changes
+    connection.close()
+
 if __name__ == '__main__':
     fix_data = GetFixtureByID(1)
     print(fix_data)
