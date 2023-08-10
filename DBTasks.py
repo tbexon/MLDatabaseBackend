@@ -117,14 +117,14 @@ def InsertMafRow(cursor, table_name, column_names, values):
             print(data)
             cursor.execute(sql,data)  # Inserts rows into DB
         except Exception as e:
-            print("Error!")
+            print("Error inserting into Manufacturers Table!")
             print(e)
 
 
 def InsertUserRow(cursor, table_name, column_names, values):
     cols = f"{cfg.userID_fld},{cfg.username_fld}, {cfg.email_fld}, {cfg.password_fld}, {cfg.admin_fld}, {cfg.edit_fld}, " \
            f" {cfg.add_fld},{cfg.view_fld},{cfg.manufacturer_grp_fld},{cfg.moderate_grp_fld}"
-    sql = f"INSERT INTO {table_name} ({cols} ) VALUES (?,?,?,?,?,?,?,?,?)"
+    sql = f"INSERT INTO {table_name} ({cols} ) VALUES (?,?,?,?,?,?,?,?,?,?)"
     for eachRow in values:
         try:
             data = (eachRow[cfg.userID_fld],eachRow[cfg.username_fld],eachRow[cfg.email_fld],eachRow[cfg.password_fld]
