@@ -123,12 +123,13 @@ def InsertMafRow(cursor, table_name, column_names, values):
 
 def InsertUserRow(cursor, table_name, column_names, values):
     cols = f"{cfg.userID_fld},{cfg.username_fld}, {cfg.email_fld}, {cfg.password_fld}, {cfg.admin_fld}, {cfg.edit_fld}, " \
-           f" {cfg.add_fld},{cfg.view_fld},{cfg.manufacturer_grp_fld}"
+           f" {cfg.add_fld},{cfg.view_fld},{cfg.manufacturer_grp_fld},{cfg.moderate_grp_fld}"
     sql = f"INSERT INTO {table_name} ({cols} ) VALUES (?,?,?,?,?,?,?,?,?)"
     for eachRow in values:
         try:
             data = (eachRow[cfg.userID_fld],eachRow[cfg.username_fld],eachRow[cfg.email_fld],eachRow[cfg.password_fld]
-                    ,eachRow[cfg.admin_fld],eachRow[cfg.edit_fld],eachRow[cfg.add_fld],eachRow[cfg.view_fld],eachRow[cfg.manufacturer_grp_fld])
+                    ,eachRow[cfg.admin_fld],eachRow[cfg.edit_fld],eachRow[cfg.add_fld],eachRow[cfg.view_fld],
+                    eachRow[cfg.manufacturer_grp_fld],eachRow[cfg.moderate_grp_fld])
             print(data)
             cursor.execute(sql,data)  # Inserts rows into DB
         except Exception as e:
@@ -174,7 +175,10 @@ def CreateMLDB(cursor,connection):
                  cfg.manf_ID_fld,
                  cfg.wattage_fld,
                  cfg.weight_fld,
-                 cfg.userID_fld
+                 cfg.userID_fld,
+                 cfg.conn_in_fld,
+                 cfg.conn_out_fld,
+                 cfg.reputation_fld
                  ]
 
     col_types = {cfg.fixture_ID_fld: 'INTEGER PRIMARY KEY',
@@ -182,7 +186,10 @@ def CreateMLDB(cursor,connection):
                  cfg.manf_ID_fld: 'INTEGER',
                  cfg.wattage_fld: 'REAL',
                  cfg.weight_fld: 'REAL',
-                 cfg.userID_fld: 'INTEGER'  }
+                 cfg.userID_fld: 'INTEGER',
+                 cfg.conn_in_fld: 'TEXT',
+                 cfg.conn_out_fld: 'TEXT',
+                 cfg.reputation_fld: 'INTEGER'}
 
     values = [{ cfg.fixture_name_fld: 'Mac Viper Performance',
                 cfg.manf_ID_fld: '1',
@@ -237,7 +244,8 @@ def CreateUserDB(cursor,connection):
                  cfg.add_fld,
                  cfg.edit_fld,
                  cfg.view_fld,
-                 cfg.manufacturer_grp_fld]
+                 cfg.manufacturer_grp_fld,
+                 cfg.moderate_grp_fld]
     # Sets the Column Types
     col_types = {cfg.userID_fld: 'INTEGER PRIMARY KEY',
                  cfg.username_fld: 'TEXT',
@@ -248,6 +256,7 @@ def CreateUserDB(cursor,connection):
                  cfg.edit_fld: 'BOOLEAN',
                  cfg.view_fld: 'BOOLEAN',
                  cfg.manufacturer_grp_fld: 'BOOLEAN',
+                 cfg.moderate_grp_fld: 'BOOLEAN'
                  }
     values = [{cfg.userID_fld: '1',
                cfg.username_fld: 'tbexon',
@@ -258,6 +267,7 @@ def CreateUserDB(cursor,connection):
                cfg.add_fld: '1',
                cfg.view_fld: '1',
                cfg.manufacturer_grp_fld: '1',
+               cfg.moderate_grp_fld: '1'
                }]
     createTable(cursor,cfg.USERS_TBL_NAME,col_names,col_types)
     InsertUserRow(cursor, cfg.USERS_TBL_NAME, col_names, values)
