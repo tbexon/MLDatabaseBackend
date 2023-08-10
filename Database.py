@@ -167,6 +167,27 @@ def ConvertFixtureTupleToFixtureDict(data):
         final_data.append(cur_row_data)
     return final_data
 
+def ConvertManufacturerTupleToManfDict(manf_data):
+    """
+    Converts a tuple of the manufacturers data into a dict
+    :param manf_data: list
+    list where each row is a tuple with the manf data in it
+    :return: dict
+    """
+    final_data = []  # Dict containing the final data to be returned
+    ind = 0
+    for eachRow in manf_data:
+        # For Each Row in Manf Table
+        cur_row_data = {}  # Dict to store current rows data in
+        ind = 0
+        for eachCol in cfg.manf_col_names:
+            # Convert raw Tuple data into a Dict where each Column name is the key
+            cur_row_data.update({eachCol:eachRow[ind]})
+            ind += 1
+        final_data.append(cur_row_data)
+    return final_data
+
+
 def InsertFixtureIntoDB(fixture_val_dict):
     """
     Inserts a new fixture into Fixture Table
@@ -210,6 +231,7 @@ def GetManufacturerByID(Manf_ID):
         final_data.update({eachCol:manf_data[0][ind]})
         ind += 1
     return final_data
+
 
 def GetUserByID(User_ID):
     """
@@ -313,6 +335,23 @@ def GetAllFixtures():
 
     return final_data
 
+def GetAllManufacturers():
+    """
+    Gets all rows in the Manufacturers Table
+    :return: list
+        Dict where each row is a dict of a fixtures values
+    """
+    try:
+        cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
+    except Exception as e:
+        print(f"Failed to initialise DB Connection!")
+        print(f"Error Message: {e}")
+    manf_data = GetAllRows(cursor,cfg.MANUFACTURER_TBL_NAME)  # Gets all rows in Manufacturer Table
+
+    final_data = ConvertManufacturerTupleToManfDict(manf_data)  # Converts Data into useable data
+
+
+    return final_data
 
 def GetFixFromSearchString(search_string):
     try:

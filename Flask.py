@@ -1,6 +1,6 @@
 from flask import Flask,jsonify, request
 import config as cfg
-from Database import GetFixtureByID, GetAllFixtures, GetFixFromSearchString
+from Database import GetFixtureByID, GetAllFixtures, GetFixFromSearchString, GetAllManufacturers
 import os
 
 
@@ -27,6 +27,20 @@ def GetFixture():
     response = jsonify(fix_data_dict)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
+
+
+@app.route("/Manufacturer", methods=['GET'])
+def GetManufacturers():
+    print("API Call Received to /Manufactuer!")
+    manf_id = request.args.get(cfg.manf_ID_fld)  # Attempts to get the Manufacturers ID if it has been included in request
+    if manf_id:
+        pass
+    else:
+        manf_data_dict = GetAllManufacturers()
+    response = jsonify(manf_data_dict)  # Converts Manufacturers data into json object
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
 
 @app.route("/FixImg/<int:fix_id>")  #{cfg.fix_img_API_Dir}
 def ServeImg(fix_id):
