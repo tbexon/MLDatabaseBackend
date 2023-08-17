@@ -454,6 +454,7 @@ def AddFixtureToDB(fixture_dict):
     cursor.close()
     connection.commit()  # Commits Changes
     connection.close()
+    return True
 
 if __name__ == '__main__':
     fix_data = GetFixtureByID(1)

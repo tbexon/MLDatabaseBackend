@@ -63,6 +63,9 @@ def AddFixture():
     if not check:
         return 'Error in Fixture', 400
     check = AddFixtureToDB(fixture_dict)
+    if not check:
+        # If an error occured whilst inserting fixture
+        return "Error Adding Fixture", 500
     return "Success!", 200
 
 def PerformChecks(fixture_dict):
