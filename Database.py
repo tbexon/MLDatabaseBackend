@@ -360,7 +360,6 @@ def InsertRowIntoTable(cursor, table_name, Data_dict):
     val_names = [':' + Col_name for Col_name in Data_dict.keys()]
     placeholders = ', '.join(val_names)
     sql = f"INSERT INTO {table_name} ({columns} ) VALUES ({placeholders});"
-
     try:
         cursor.execute(sql, Data_dict)  # Inserts rows into DB
     except Exception as e:
@@ -425,7 +424,7 @@ def AddFixtureToDB(fixture_dict):
     Gets required Manf ID from Manf Name, and adds fixture to Fixture Database
     :param fixture_dict: dict
         dict containing the fixture information
-    :return: bool
+    :return: bool, int
         returns True if Fixture Successfully added
     """
 
@@ -449,12 +448,14 @@ def AddFixtureToDB(fixture_dict):
     except Exception as e:
         print(f"Error Inserting Fixture into DB! Aborting")
         print(f"Error Msg: {e}")
-        return False  # Cancels Committing changes to DB and tells Flask operation failed
+        return False, None  # Cancels Committing changes to DB and tells Flask operation failed
+
+    fix_id = cursor.lastrowid  # Gets the FixId for the last inserted Fixture
     print("Successfully Inserted Fixture Into Database saving, DB!")
     cursor.close()
     connection.commit()  # Commits Changes
     connection.close()
-    return True
+    return True, fix_id
 
 if __name__ == '__main__':
     fix_data = GetFixtureByID(1)
