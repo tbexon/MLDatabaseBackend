@@ -27,24 +27,6 @@ def closeConnection(connection):
     connection.close()
 
 
-def checkTableExists(cursor, table_name):
-    """
-    Checks if Table already exists
-    :param cursor: cursor object
-    :param table_name: str
-        Table Name to look for
-    :return: bool
-    """
-    # Checks if table already exists
-    cursor.execute(f''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{table_name}' ''')
-    if cursor.fetchone()[0] == 1:
-        # If Table Already exists
-        print(f"Table Already exists!")
-        return True
-    else:
-        return False
-
-
 def InsertSingleRow(cursor, table_name, column_names, values):
     """
     Inserts a new row into specified Table
@@ -79,32 +61,6 @@ def InsertSingleRow(cursor, table_name, column_names, values):
         print("Error!")
         print(e)
 
-def InsertManfRow(cursor, table_name, column_names, values):
-    cols = f"{cfg.manf_ID_fld},{cfg.manufacturer_fld}, {cfg.userID_fld}"
-    sql = f"INSERT INTO {table_name} ({cols} ) VALUES (?,?,?)"
-    for eachRow in values:
-        try:
-            data = (eachRow[cfg.manf_ID_fld],eachRow[cfg.manufacturer_fld],eachRow[cfg.userID_fld])
-            print(data)
-            cursor.execute(sql,data)  # Inserts rows into DB
-        except Exception as e:
-            print("Error!")
-            print(e)
-
-
-def InsertUserRow(cursor, table_name, column_names, values):
-    cols = f"{cfg.userID_fld},{cfg.username_fld}, {cfg.email_fld}, {cfg.password_fld}, {cfg.admin_fld}, {cfg.edit_fld}, " \
-           f" {cfg.add_fld},{cfg.view_fld},{cfg.manufacturer_grp_fld}"
-    sql = f"INSERT INTO {table_name} ({cols} ) VALUES (?,?,?,?,?,?,?,?,?)"
-    for eachRow in values:
-        try:
-            data = (eachRow[cfg.userID_fld],eachRow[cfg.username_fld],eachRow[cfg.email_fld],eachRow[cfg.password_fld]
-                    ,eachRow[cfg.admin_fld],eachRow[cfg.edit_fld],eachRow[cfg.add_fld],eachRow[cfg.view_fld],eachRow[cfg.manufacturer_grp_fld])
-            print(data)
-            cursor.execute(sql,data)  # Inserts rows into DB
-        except Exception as e:
-            print("Error!")
-            print(e)
 
 def GetRowByID(cursor,ID,table_name,ID_col_name):
     sql = f"SELECT * FROM {table_name} WHERE {ID_col_name} = {ID}"
@@ -194,27 +150,6 @@ def ConvertManufacturerTupleToManfDict(manf_data):
             ind += 1
         # final_data.append(cur_row_data)
     return final_data
-
-
-def InsertFixtureIntoDB(fixture_val_dict):
-    """
-    Inserts a new fixture into Fixture Table
-    :param fixture_val_dict: dict
-        Dict of Fixture Values
-    :return:
-    """
-    try:
-        cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
-    except Exception as e:
-        print(f"Failed to initialise DB Connection!")
-        print(f"Error Message: {e}")
-    try:
-        # Inserts row into Fixture Table
-        InsertSingleRow(cursor,cfg.FIXTURE_TBL_NAME,cfg.fixture_col_names,fixture_val_dict)
-    except:
-        print(f"Failed to insert row into DB!")
-        print(f"Error Message: {e}")
-    closeConnection(connection)  # Commits Changes and closes connection
 
 
 def GetManufacturerByID(Manf_ID):
