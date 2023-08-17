@@ -79,7 +79,7 @@ def InsertSingleRow(cursor, table_name, column_names, values):
         print("Error!")
         print(e)
 
-def InsertMafRow(cursor, table_name, column_names, values):
+def InsertManfRow(cursor, table_name, column_names, values):
     cols = f"{cfg.manf_ID_fld},{cfg.manufacturer_fld}, {cfg.userID_fld}"
     sql = f"INSERT INTO {table_name} ({cols} ) VALUES (?,?,?)"
     for eachRow in values:
@@ -249,7 +249,10 @@ def GetManufacturerIDFromName(Manf_string,cursor):
     :return: string
     """
     manf_data = GetRowByString(cursor,Manf_string,cfg.MANUFACTURER_TBL_NAME,cfg.manufacturer_fld)
-    manf_id = manf_data[0][0]
+    if manf_data:
+        manf_id = manf_data[0][0]
+    else:
+        manf_id = None
     return manf_id
 
 def GetUserByID(User_ID):
@@ -407,27 +410,112 @@ def GetFixFromSearchString(search_string,**kwargs):
     return final_data
 
 
-def InsertRowIntoTable(cursor, table_name,column_names, fixture_dict):
+def InsertRowIntoTable(cursor, table_name, Data_dict):
+    """
+    Inserts the a new row into the table. The Data_dict keys will be used as column names
+    :param cursor: obj
+    :param table_name: str
+        Name of Table to insert Data into
+    :param Data_dict: dict
+        Dict containing data to insert into table
+    :return:
+    """
 
-    cols = f"{cfg.fixture_name_fld},{cfg.manf_ID_fld}, {cfg.wattage_fld},{cfg.weight_fld},{cfg.userID_fld},{cfg.conn_in_fld},{cfg.conn_out_fld},{cfg.reputation_fld}"
-    columns = ', '.join(fixture_dict.keys())
-    placeholders = ', '.join(fixture_dict.values())
-    sql = f"INSERT INTO {table_name} ({columns} ) VALUES ({placeholders})"
-    print(sql)
+    columns = ', '.join(Data_dict.keys())
+    val_names = [':' + Col_name for Col_name in Data_dict.keys()]
+    placeholders = ', '.join(val_names)
+    sql = f"INSERT INTO {table_name} ({columns} ) VALUES ({placeholders});"
 
     try:
-        data = (fixture_dict[cfg.fixture_name_fld], fixture_dict[cfg.manf_ID_fld], fixture_dict[cfg.wattage_fld],
-                fixture_dict[cfg.weight_fld], fixture_dict[cfg.userID_fld],fixture_dict[cfg.conn_in_fld],
-                fixture_dict[cfg.conn_out_fld], fixture_dict[cfg.reputation_fld])
-        # print(data)
-        # cursor.execute(sql, data)  # Inserts rows into DB
+        cursor.execute(sql, Data_dict)  # Inserts rows into DB
     except Exception as e:
-        print("Error!")
+        print("Error Inserting Row Into DB!")
         print(e)
 
+
+def CheckManfExists(manf_name, cursor):
+    """
+    Checks if there is currently a manufacturer in the database with the specified string name, and attempts to return
+    the manf_id
+    :param manf_name:
+    :param cursor:
+    :return: bool, int
+        Returns True if Manufacturer already exists along with the ID
+    """
+
+    try:
+        Manf_ID = GetManufacturerIDFromName(manf_name, cursor)
+    except Exception as e:
+        print(f"Error Getting Manf ID from String, Setting Manf ID to None")
+        print(f"Error: {e}")
+        Manf_ID = None
+    if Manf_ID is None:
+        return False,None
+    else:
+        return True, Manf_ID
+
+
+def AddNewManufacturer(Manf_name, cursor, **kwargs):
+    """
+    Adds a new manufacturer to the Manf Table
+    If no user ID has been specified it will default to 1 (Auto Import User)
+    :param Manf_name: str
+        name of Manufacturer
+    :param cursor: obj
+        sqllite cursor object
+    :param kwargs: UserID
+    :return: int
+        returns new Manf_ID
+    """
+
+    manf_dict = {cfg.manufacturer_fld:Manf_name}
+    if cfg.userID_fld in kwargs:
+        # If a user ID for the manufacturer has been specified
+        manf_dict.update({cfg.userID_fld: kwargs[cfg.userID_fld]})
+    else:
+        manf_dict.update({cfg.userID_fld: 1})
+    try:
+        InsertRowIntoTable(cursor,cfg.MANUFACTURER_TBL_NAME,manf_dict)  # Inserts the new Manufacturer into DB
+    except:
+        print(f"Error Inserting New Manufacturer!")
+    cursor.execute(f"Select * FROM {cfg.MANUFACTURER_TBL_NAME}")
+    manf_exists, Manf_id = CheckManfExists(manf_dict[cfg.manufacturer_fld],cursor)
+    if manf_exists:
+        return Manf_id
+    else:
+        return None
+
 def AddFixtureToDB(fixture_dict):
+    """
+    Gets required Manf ID from Manf Name, and adds fixture to Fixture Database
+    :param fixture_dict: dict
+        dict containing the fixture information
+    :return: bool
+        returns True if Fixture Successfully added
+    """
+
     cursor, connection = initConnection(cfg.DBFILEPATH)
-    InsertRowIntoTable(cursor,cfg.FIXTURE_TBL_NAME,cfg.fixture_col_names,fixture_dict)
+    # Checks if Manufuacturer already exists
+    manf_exists, Manf_id = CheckManfExists(fixture_dict[cfg.manufacturer_fld],cursor)
+    if not manf_exists:
+        # If the Manufacturer does not already exist
+        Manf_id = AddNewManufacturer(fixture_dict[cfg.manufacturer_fld],cursor)  # Adds new Manufacturer to DB
+    if Manf_id is not None:
+        fixture_dict.update({cfg.manf_ID_fld:Manf_id})
+        # Deletes the Manufacturer Name from Fixture Dict so that only the Manf_ID is written to the Fixture DB
+        del fixture_dict[cfg.manufacturer_fld]
+    else:
+        print(f"Manufacturer ID is None! Aborting!")
+        return False   # Cancels Committing changes to DB and tells Flask operation failed
+
+    try:
+        # Inserts Fixture into DB
+        InsertRowIntoTable(cursor,cfg.FIXTURE_TBL_NAME,fixture_dict)
+    except Exception as e:
+        print(f"Error Inserting Fixture into DB! Aborting")
+        print(f"Error Msg: {e}")
+        return False  # Cancels Committing changes to DB and tells Flask operation failed
+    print("Successfully Inserted Fixture Into Database saving, DB!")
     cursor.close()
     connection.commit()  # Commits Changes
     connection.close()
