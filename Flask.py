@@ -1,10 +1,15 @@
 from flask import Flask,jsonify, request
+from werkzeug.utils import secure_filename
 import config as cfg
 from Database import GetFixtureByID, GetAllFixtures, GetFixFromSearchString, GetAllManufacturers, AddFixtureToDB
 import os
 
 
+UPLOAD_FOLDER = 'C:\Projects\MLDatabaseBackend\static'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}  # File extensions allowed for image upload
+
 app = Flask(__name__)  # Create Flask Server
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route("/Fixture",methods=['GET'])
 def GetFixture():
@@ -36,36 +41,60 @@ def GetFixture():
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route("/AddFixture")
+
+@app.route("/AddFixture", methods=['POST'])
 def AddFixture():
-    # Attempts to get all params required to add a fixture
-    InstType = request.args.get(cfg.fixture_name_fld)
-    Manf_name = request.args.get(cfg.manufacturer_fld)
-    wattage = request.args.get(cfg.wattage_fld)
-    weight = request.args.get(cfg.weight_fld)
-    user_ID = request.args.get(cfg.userID_fld)
-    conn_in = request.args.get(cfg.conn_in_fld)
-    conn_out = request.args.get(cfg.conn_out_fld)
 
+    # fixture_dict = request.get_json()  # Gets JSON Body as dict
+
+    # Attempts to get all params required to add a fixture
+    InstType = request.form.get(cfg.fixture_name_fld)
+    Manf_name = request.form.get(cfg.manufacturer_fld)
+    wattage = request.form.get(cfg.wattage_fld)
+    weight = request.form.get(cfg.weight_fld)
+    user_ID = request.form.get(cfg.userID_fld)
+    conn_in = request.form.get(cfg.conn_in_fld)
+    conn_out = request.form.get(cfg.conn_out_fld)
 
     # Adds all values to DB
-    fixture_dict = { cfg.fixture_name_fld: InstType,
+    fixture_dict = {cfg.fixture_name_fld: InstType,
                     cfg.manufacturer_fld: Manf_name,
-                    cfg.wattage_fld:wattage,
+                    cfg.wattage_fld: wattage,
                     cfg.weight_fld: weight,
                     cfg.userID_fld: user_ID,
                     cfg.conn_in_fld: conn_in,
-                    cfg.conn_out_fld:conn_out
-               }
-    print(fixture_dict)
+                    cfg.conn_out_fld: conn_out
+                    }
+    print(f"Fixture Dict: {fixture_dict}")
     check, fixture_dict = PerformChecks(fixture_dict)  # Checks Fixture info for problems
     if not check:
         return 'Error in Fixture', 400
-    check = AddFixtureToDB(fixture_dict)
+    check,fix_id = AddFixtureToDB(fixture_dict)
     if not check:
         # If an error occured whilst inserting fixture
         return "Error Adding Fixture", 500
+    if 'file' in request.files:
+        print(f"Image file detected in request adding image")
+        file = request.files['file']
+        if file.filename == '':
+            print('No selected file')
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            # Saves the image to the static image folder
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file_name, file_extension = os.path.splitext(filename)
+            file_extension = '.png'
+            print(file_extension)
+            print(fix_id)
+            new_filename = str(fix_id)+file_extension
+            # Renames Image file to fixture ID
+            os.rename(os.path.join(app.config['UPLOAD_FOLDER'], filename),os.path.join(app.config['UPLOAD_FOLDER'], new_filename))
+
+
     return "Success!", 200
 
 def PerformChecks(fixture_dict):
@@ -75,7 +104,13 @@ def PerformChecks(fixture_dict):
     :return: bool, dict
     """
     if not CheckIfInstTypeIsBlank(fixture_dict[cfg.fixture_name_fld]):
+        # Checks if Fixture Name is Blank
+        print("Fixture Name is Blank")
         return False,fixture_dict
+    if not CheckIfInstAlreadyExists(fixture_dict[cfg.fixture_name_fld]):
+        # Checks if Fixture Already Exists
+        print("Fixture Already Exists!")
+        return False, fixture_dict
 
     return True,fixture_dict
 
@@ -90,6 +125,23 @@ def CheckIfInstTypeIsBlank(InstType):
         return False
     else:
         return True
+
+def CheckIfInstAlreadyExists(InstType):
+    """
+    Checks if Instrument already exists
+    :param InstType: str
+        Fixture name
+    :return: bool
+    """
+    Fix_data = GetFixFromSearchString(InstType)  # Checks if fixture is already in DB
+    if Fix_data:
+        print(f"Fixture Already Exists! Returning False")
+        return False
+    else:
+        print("Fixture does not already exist returning True")
+        return True
+
+
 @app.route("/Manufacturer", methods=['GET'])
 def GetManufacturers():
     print("API Call Received to /Manufactuer!")
