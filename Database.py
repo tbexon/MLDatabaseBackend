@@ -1,4 +1,4 @@
-import sqlite3
+import pymysql
 import config as cfg
 import os
 
@@ -11,7 +11,13 @@ def initConnection(DBFIlEPATH):
     :return: cursor object, connection object
     """
     try:
-        connection = sqlite3.connect(DBFIlEPATH)
+        connection = pymysql.connect(
+            host=cfg.DBHOSTNAME,
+            port=cfg.DBPORT,
+            user=cfg.DBUSERNAME,
+            password='',
+            database=cfg.DBNAME
+        )
     except Exception as e:
         print(f"Error Occured: {e}")
         return False
@@ -267,7 +273,7 @@ def GetFixtureImgURL(fix_id):
     #     #print(f"Specific Fixture image specified updating to {final_path}")
     #
     # else:
-    #     final_path = os.path.join("http://127.0.0.1:5000/",cfg.fix_img_API_Dir,cfg.stock_image_FileName)
+    #     final_path = os.pah.join("http://127.0.0.1:5000/",cfg.fix_img_API_Dir,cfg.stock_image_FileName)
     #    # print(f"No Fixture image found updating to {final_path}")
 
 

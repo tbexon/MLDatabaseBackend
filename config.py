@@ -1,6 +1,9 @@
 # Global Variables
 
-DBNAME = 'MLDatabase.db'
+DBHOSTNAME = 'mldatabase.coqumob6opcg.eu-north-1.rds.amazonaws.com'
+DBPORT = 3306
+DBUSERNAME = 'admin'
+DBNAME = 'MLDatabase'
 DBFILEPATH = f"DB/{DBNAME}"
 
 # Table Names
