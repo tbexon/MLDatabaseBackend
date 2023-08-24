@@ -7,6 +7,8 @@ DBPW = 'W1nd0w2_s3v3r'
 DBNAME = 'MLDatabase'
 DBFILEPATH = f"DB/{DBNAME}"
 
+MLBACKENDURL = "http://ec2-51-20-5-169.eu-north-1.compute.amazonaws.com/"  # URL for the Back End Web server
+
 # Table Names
 
 FIXTURE_TBL_NAME = "Fixtures"
