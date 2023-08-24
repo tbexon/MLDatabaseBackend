@@ -1,8 +1,9 @@
 import pymysql
 import config as cfg
 import os
+import logging
 
-
+log = logging.getLogger(cfg.MainLogName)  # Sets up logging
 def initConnection(DBFILEPATH):
     """
     Connects to specified SQL Database
@@ -19,7 +20,7 @@ def initConnection(DBFILEPATH):
             database=cfg.DBNAME
         )
     except Exception as e:
-        print(f"Error Occured: {e}")
+        log.debug(f"Error Occured: {e}")
         return False
     cursor = connection.cursor()
     return cursor, connection
@@ -61,11 +62,11 @@ def InsertSingleRow(cursor, table_name, column_names, values):
     try:
         # data = (eachRow[cfg.fixture_name_fld],eachRow[cfg.manf_ID_fld],eachRow[cfg.wattage_fld],
         #         eachRow[cfg.weight_fld], eachRow[cfg.userID_fld])
-        print(sql)
+        log.debug(sql)
         cursor.execute(sql)  # Inserts rows into DB
     except Exception as e:
-        print("Error!")
-        print(e)
+        log.debug("Error!")
+        log.debug(e)
 
 
 def GetRowByID(cursor,ID,table_name,ID_col_name):
@@ -115,7 +116,7 @@ def ConvertFixtureTupleToFixtureDict(data):
                 cur_row_data.update({eachCol: eachRow[ind]})
                 ind += 1
             except:
-                print(f"Failed to add {eachCol} to Dict!")
+                log.debug(f"Failed to add {eachCol} to Dict!")
                 continue
 
         fix_img_path = GetFixtureImgURL(cur_row_data[cfg.fixture_ID_fld])  # Converts fixture ID to complete path of image
@@ -169,8 +170,8 @@ def GetManufacturerByID(Manf_ID):
     try:
         cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
     except Exception as e:
-        print(f"Failed to initialise DB Connection!")
-        print(f"Error Message: {e}")
+        log.debug(f"Failed to initialise DB Connection!")
+        log.debug(f"Error Message: {e}")
     # Get Manufacturers data as Tuple
     manf_data = GetRowByID(cursor,Manf_ID,cfg.MANUFACTURER_TBL_NAME,cfg.manf_ID_fld)
     final_data = {}  # Dict containing the final data to be returned
@@ -207,8 +208,8 @@ def GetUserByID(User_ID):
     try:
         cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
     except Exception as e:
-        print(f"Failed to initialise DB Connection!")
-        print(f"Error Message: {e}")
+        log.debug(f"Failed to initialise DB Connection!")
+        log.debug(f"Error Message: {e}")
     # Get User's data as Tuple
     data = GetRowByID(cursor,User_ID,cfg.USERS_TBL_NAME,cfg.userID_fld)
     final_data = {}  # Dict containing the final data to be returned
@@ -232,8 +233,8 @@ def GetFixtureByID(Fix_ID):
     try:
         cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
     except Exception as e:
-        print(f"Failed to initialise DB Connection!")
-        print(f"Error Message: {e}")
+        log.debug(f"Failed to initialise DB Connection!")
+        log.debug(f"Error Message: {e}")
     # Get specific Fixture Data as Tuple based on Fixture ID
     fixture_data = GetRowByID(cursor,Fix_ID,cfg.FIXTURE_TBL_NAME,cfg.fixture_ID_fld)
 
@@ -293,8 +294,8 @@ def GetAllFixtures(**kwargs):
     try:
         cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
     except Exception as e:
-        print(f"Failed to initialise DB Connection!")
-        print(f"Error Message: {e}")
+        log.debug(f"Failed to initialise DB Connection!")
+        log.debug(f"Error Message: {e}")
     if manf_string != "":
         manf_id = GetManufacturerIDFromName(manf_string,cursor)  # Gets the manufacturer ID
         fixture_data = GetRowByString(cursor,manf_id,cfg.FIXTURE_TBL_NAME,cfg.manf_ID_fld)
@@ -315,8 +316,8 @@ def GetAllManufacturers():
     try:
         cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
     except Exception as e:
-        print(f"Failed to initialise DB Connection!")
-        print(f"Error Message: {e}")
+        log.debug(f"Failed to initialise DB Connection!")
+        log.debug(f"Error Message: {e}")
     manf_data = GetAllRows(cursor,cfg.MANUFACTURER_TBL_NAME)  # Gets all rows in Manufacturer Table
 
     final_data = ConvertManufacturerTupleToManfDict(manf_data)  # Converts Data into useable data
@@ -332,13 +333,13 @@ def GetFixFromSearchString(search_string,**kwargs):
     try:
         cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
     except Exception as e:
-        print(f"Failed to initialise DB Connection!")
-        print(f"Error Message: {e}")
+        log.debug(f"Failed to initialise DB Connection!")
+        log.debug(f"Error Message: {e}")
     if manf_string != "":
         manf_id = GetManufacturerIDFromName(manf_string,cursor)  # Gets the manufacturer ID
-        print(f"manf_id: {manf_id}")
+        log.debug(f"manf_id: {manf_id}")
         sql = f"SELECT * FROM 'Fixtures' WHERE InstType LIKE \"%{search_string}%\" AND {cfg.manf_ID_fld} = {manf_id};"
-        print(sql)
+        log.debug(sql)
     else:
         sql = f"SELECT * FROM 'Fixtures' WHERE InstType LIKE \"%{search_string}%\";"
     cursor.execute(sql)
@@ -369,8 +370,8 @@ def InsertRowIntoTable(cursor, table_name, Data_dict):
     try:
         cursor.execute(sql, Data_dict)  # Inserts rows into DB
     except Exception as e:
-        print("Error Inserting Row Into DB!")
-        print(e)
+        log.debug("Error Inserting Row Into DB!")
+        log.debug(e)
 
 
 def CheckManfExists(manf_name, cursor):
@@ -386,8 +387,8 @@ def CheckManfExists(manf_name, cursor):
     try:
         Manf_ID = GetManufacturerIDFromName(manf_name, cursor)
     except Exception as e:
-        print(f"Error Getting Manf ID from String, Setting Manf ID to None")
-        print(f"Error: {e}")
+        log.debug(f"Error Getting Manf ID from String, Setting Manf ID to None")
+        log.debug(f"Error: {e}")
         Manf_ID = None
     if Manf_ID is None:
         return False,None
@@ -417,7 +418,7 @@ def AddNewManufacturer(Manf_name, cursor, **kwargs):
     try:
         InsertRowIntoTable(cursor,cfg.MANUFACTURER_TBL_NAME,manf_dict)  # Inserts the new Manufacturer into DB
     except:
-        print(f"Error Inserting New Manufacturer!")
+        log.debug(f"Error Inserting New Manufacturer!")
     cursor.execute(f"Select * FROM {cfg.MANUFACTURER_TBL_NAME}")
     manf_exists, Manf_id = CheckManfExists(manf_dict[cfg.manufacturer_fld],cursor)
     if manf_exists:
@@ -445,19 +446,19 @@ def AddFixtureToDB(fixture_dict):
         # Deletes the Manufacturer Name from Fixture Dict so that only the Manf_ID is written to the Fixture DB
         del fixture_dict[cfg.manufacturer_fld]
     else:
-        print(f"Manufacturer ID is None! Aborting!")
+        log.debug(f"Manufacturer ID is None! Aborting!")
         return False   # Cancels Committing changes to DB and tells Flask operation failed
 
     try:
         # Inserts Fixture into DB
         InsertRowIntoTable(cursor,cfg.FIXTURE_TBL_NAME,fixture_dict)
     except Exception as e:
-        print(f"Error Inserting Fixture into DB! Aborting")
-        print(f"Error Msg: {e}")
+        log.debug(f"Error Inserting Fixture into DB! Aborting")
+        log.debug(f"Error Msg: {e}")
         return False, None  # Cancels Committing changes to DB and tells Flask operation failed
 
     fix_id = cursor.lastrowid  # Gets the FixId for the last inserted Fixture
-    print("Successfully Inserted Fixture Into Database saving, DB!")
+    log.debug("Successfully Inserted Fixture Into Database saving, DB!")
     cursor.close()
     connection.commit()  # Commits Changes
     connection.close()
@@ -465,4 +466,4 @@ def AddFixtureToDB(fixture_dict):
 
 if __name__ == '__main__':
     fix_data = GetFixtureByID(1)
-    print(fix_data)
+    log.debug(fix_data)

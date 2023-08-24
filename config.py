@@ -9,6 +9,9 @@ DBFILEPATH = f"DB/{DBNAME}"
 
 MLBACKENDURL = "http://ec2-51-20-5-169.eu-north-1.compute.amazonaws.com/"  # URL for the Back End Web server
 
+MLBACKENDLOGPATH = "/MLBackend/logs/MLBackend Logs/MLBackend Log.log"
+MainLogName = "MLBackend"
+
 # Table Names
 
 FIXTURE_TBL_NAME = "Fixtures"
