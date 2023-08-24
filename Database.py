@@ -3,7 +3,11 @@ import config as cfg
 import os
 import logging
 
-log = logging.getLogger(cfg.MainLogName)  # Sets up logging
+
+def SetupLogging():
+    log = logging.getLogger(cfg.MainLogName)  # Sets up logging
+    log.debug(f"Started in DB File")
+    return log
 def initConnection(DBFILEPATH):
     """
     Connects to specified SQL Database
@@ -230,6 +234,7 @@ def GetFixtureByID(Fix_ID):
     :return: dict
         Returns a dict containing Fixture's info
     """
+    log = SetupLogging()  # Sets up logging for this function
     try:
         cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
     except Exception as e:
@@ -287,6 +292,7 @@ def GetAllFixtures(**kwargs):
     :return: list
         Dict where each row is a dict of a fixtures values
     """
+    log = SetupLogging()  # Sets up logging for this function
     if 'manf' in kwargs:
         manf_string = kwargs['manf']
     else:
@@ -313,6 +319,7 @@ def GetAllManufacturers():
     :return: list
         Dict where each row is a dict of a fixtures values
     """
+    log = SetupLogging()  # Sets up logging for this function
     try:
         cursor,connection = initConnection(cfg.DBFILEPATH)  # Opens Connection to DB
     except Exception as e:
@@ -326,6 +333,7 @@ def GetAllManufacturers():
     return final_data
 
 def GetFixFromSearchString(search_string,**kwargs):
+    log = SetupLogging()  # Sets up logging for this function
     if 'manf' in kwargs:
         manf_string = kwargs['manf']
     else:
@@ -338,10 +346,10 @@ def GetFixFromSearchString(search_string,**kwargs):
     if manf_string != "":
         manf_id = GetManufacturerIDFromName(manf_string,cursor)  # Gets the manufacturer ID
         log.debug(f"manf_id: {manf_id}")
-        sql = f"SELECT * FROM 'Fixtures' WHERE InstType LIKE \"%{search_string}%\" AND {cfg.manf_ID_fld} = {manf_id};"
+        sql = f"SELECT * FROM Fixtures WHERE InstType LIKE \"%{search_string}%\" AND {cfg.manf_ID_fld} = {manf_id};"
         log.debug(sql)
     else:
-        sql = f"SELECT * FROM 'Fixtures' WHERE InstType LIKE \"%{search_string}%\";"
+        sql = f"SELECT * FROM Fixtures WHERE InstType LIKE \"%{search_string}%\";"
     cursor.execute(sql)
 
     output = cursor.fetchall()
@@ -434,7 +442,7 @@ def AddFixtureToDB(fixture_dict):
     :return: bool, int
         returns True if Fixture Successfully added
     """
-
+    log = SetupLogging()  # Sets up logging for this function
     cursor, connection = initConnection(cfg.DBFILEPATH)
     # Checks if Manufuacturer already exists
     manf_exists, Manf_id = CheckManfExists(fixture_dict[cfg.manufacturer_fld],cursor)
