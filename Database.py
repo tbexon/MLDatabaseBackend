@@ -3,7 +3,7 @@ import config as cfg
 import os
 
 
-def initConnection(DBFIlEPATH):
+def initConnection(DBFILEPATH):
     """
     Connects to specified SQL Database
     :param DBFIlEPATH: str
@@ -15,7 +15,7 @@ def initConnection(DBFIlEPATH):
             host=cfg.DBHOSTNAME,
             port=cfg.DBPORT,
             user=cfg.DBUSERNAME,
-            password='',
+            password=cfg.DBPW,
             database=cfg.DBNAME
         )
     except Exception as e:

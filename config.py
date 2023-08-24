@@ -3,6 +3,7 @@
 DBHOSTNAME = 'mldatabase.coqumob6opcg.eu-north-1.rds.amazonaws.com'
 DBPORT = 3306
 DBUSERNAME = 'admin'
+DBPW = 'W1nd0w2_s3v3r'
 DBNAME = 'MLDatabase'
 DBFILEPATH = f"DB/{DBNAME}"
 
