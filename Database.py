@@ -163,6 +163,43 @@ def ConvertManufacturerTupleToManfDict(manf_data):
     return final_data
 
 
+def ConvertFixDictToFixTuple(fix_dict):
+    """
+    Converts a fixture dict to a tuple ready for inserting into the fixture table
+    :param fix_dict:
+    :return: tuple
+
+    """
+    fix_list = []
+    for eachField in cfg.fix_col_order:
+        # Iterates through each column in fixture table column order, and adds values to list in correct order
+        fix_list.append(fix_dict[eachField])
+    # fix_tuple = (
+    #     fix_dict[cfg.fixture_name_fld],
+    #     fix_dict[cfg.wattage_fld],
+    #     fix_dict[cfg.weight_fld],
+    #     fix_dict[cfg.userID_fld],
+    #     fix_dict[cfg.conn_in_fld],
+    #     fix_dict[cfg.conn_out_fld],
+    #     fix_dict[cfg.manf_ID_fld]
+    # )
+    fix_tuple = tuple(fix_list)  # Converts List to Tuple
+    return fix_tuple
+
+def ConvertManfDictToManfTuple(manf_dict):
+    """
+    Converts a fixture dict to a tuple ready for inserting into the fixture table
+    :param manf_dict:
+    :return: tuple
+
+    """
+    manf_tuple = ()
+    for eachField in cfg.manf_col_names:
+        # Iterates through each column in manf table column order, and adds values to tuple in correct order
+        manf_tuple = manf_tuple + manf_dict[eachField]
+
+    return manf_tuple
+
 def GetManufacturerByID(Manf_ID):
     """
     Gets a specific Manufacturers row from DB based on Manufacturers ID
@@ -360,27 +397,31 @@ def GetFixFromSearchString(search_string,**kwargs):
     return final_data
 
 
-def InsertRowIntoTable(cursor, table_name, Data_dict):
+def InsertRowIntoTable(cursor, table_name, Data_tuple, columns):
     """
     Inserts the a new row into the table. The Data_dict keys will be used as column names
     :param cursor: obj
     :param table_name: str
         Name of Table to insert Data into
-    :param Data_dict: dict
+    :param Data_tuple: tuple
         Dict containing data to insert into table
+    :param columns: list
+        List of Column names in correct order that corresponds to tuple
     :return:bool
         Returns true if no error thrown, or false if error thrown
     """
     log = SetupLogging()  # Sets up logging for this function
     log.debug(f"Inserting Data into {table_name}")
-    log.debug(f"Data Dict: {Data_dict}")
-    columns = ', '.join(Data_dict.keys())
-    val_names = [':' + Col_name for Col_name in Data_dict.keys()]
-    placeholders = ', '.join(val_names)
+    log.debug(f"Data Dict: {Data_tuple}")
+    log.debug(f"Columns: {columns}")
+
+    columns = ', '.join(columns)  # Joins all column names together in one string, separated by comma
+    val_names = ['%s' for value in Data_tuple]  # Adds %s placeholder for each value in Tuple
+    placeholders = ', '.join(val_names)  # Joins all placeholder together in one string  separated by comma
     sql = f"INSERT INTO {table_name} ({columns} ) VALUES ({placeholders});"
     log.debug(f"SQL: {sql}")
     try:
-        cursor.execute(sql, Data_dict)  # Inserts rows into DB
+        cursor.execute(sql, Data_tuple)  # Inserts rows into DB
     except Exception as e:
         log.debug("Error Inserting Row Into DB!")
         log.debug(e)
@@ -433,8 +474,10 @@ def AddNewManufacturer(Manf_name, cursor, **kwargs):
         manf_dict.update({cfg.userID_fld: kwargs[cfg.userID_fld]})
     else:
         manf_dict.update({cfg.userID_fld: 1})
+    manf_tuple = ConvertManfDictToManfTuple(manf_dict)  # Converts Manf Dict to Tuple
     try:
-        InsertRowIntoTable(cursor,cfg.MANUFACTURER_TBL_NAME,manf_dict)  # Inserts the new Manufacturer into DB
+        # Inserts the new Manufacturer into DB
+        check = InsertRowIntoTable(cursor,cfg.MANUFACTURER_TBL_NAME,manf_tuple,cfg.manf_col_names)
     except:
         log.debug(f"Error Inserting New Manufacturer!")
     cursor.execute(f"Select * FROM {cfg.MANUFACTURER_TBL_NAME}")
@@ -472,10 +515,18 @@ def AddFixtureToDB(fixture_dict):
         log.debug(f"Manufacturer ID is None! Aborting!")
         return False   # Cancels Committing changes to DB and tells Flask operation failed
 
+    fixture_dict.update({cfg.reputation_fld:0})  # Adds a neutral reputation to fixture, as it is brand new
+
+    log.debug(F"Converting Fixture Dict to Tuple")
+    try:
+        fix_tuple = ConvertFixDictToFixTuple(fixture_dict)  # Converts Fixture Data from Dict to tuple in correct order
+    except Exception as e:
+        log.debug(f"Erorr converting to Tuple")
+        log.debug(f"Errro Msg: {e}")
     try:
         log.debug(f"Inserting Fixture into Fixture Table!")
         # Inserts Fixture into DB
-        check = InsertRowIntoTable(cursor,cfg.FIXTURE_TBL_NAME,fixture_dict)
+        check = InsertRowIntoTable(cursor,cfg.FIXTURE_TBL_NAME,fix_tuple, cfg.fix_col_order)
     except Exception as e:
         log.debug(f"Error Inserting Fixture into DB! Aborting")
         log.debug(f"Error Msg: {e}")

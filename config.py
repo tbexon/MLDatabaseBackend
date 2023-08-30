@@ -59,6 +59,17 @@ dmxcnt_fld = "DMX_count"
 
 # COLUMN LISTS
 
+fix_col_order = [  # List of columns, in the correct order, for using to insert into fixture table
+    fixture_name_fld,
+    wattage_fld,
+    weight_fld,
+    userID_fld,
+    conn_in_fld,
+    conn_out_fld,
+    manf_ID_fld,
+    reputation_fld
+]
+
 # List of Fixture Table Columns Names
 fixture_col_names = [fixture_ID_fld,
              fixture_name_fld,
