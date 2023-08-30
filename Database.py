@@ -368,18 +368,24 @@ def InsertRowIntoTable(cursor, table_name, Data_dict):
         Name of Table to insert Data into
     :param Data_dict: dict
         Dict containing data to insert into table
-    :return:
+    :return:bool
+        Returns true if no error thrown, or false if error thrown
     """
-
+    log = SetupLogging()  # Sets up logging for this function
+    log.debug(f"Inserting Data into {table_name}")
+    log.debug(f"Data Dict: {Data_dict}")
     columns = ', '.join(Data_dict.keys())
     val_names = [':' + Col_name for Col_name in Data_dict.keys()]
     placeholders = ', '.join(val_names)
     sql = f"INSERT INTO {table_name} ({columns} ) VALUES ({placeholders});"
+    log.debug(f"SQL: {sql}")
     try:
         cursor.execute(sql, Data_dict)  # Inserts rows into DB
     except Exception as e:
         log.debug("Error Inserting Row Into DB!")
         log.debug(e)
+        return False  # Returns False as error thrown
+    return True  # Returns True as no error Thrown
 
 
 def CheckManfExists(manf_name, cursor):
@@ -391,16 +397,19 @@ def CheckManfExists(manf_name, cursor):
     :return: bool, int
         Returns True if Manufacturer already exists along with the ID
     """
-
+    log = SetupLogging()  # Sets up logging for this function
+    log.debug(f"Checking if Manufacturer Exists already")
     try:
         Manf_ID = GetManufacturerIDFromName(manf_name, cursor)
     except Exception as e:
         log.debug(f"Error Getting Manf ID from String, Setting Manf ID to None")
         log.debug(f"Error: {e}")
         Manf_ID = None
-    if Manf_ID is None:
+    if Manf_ID is None:  # If Manufacturer does not already exist
+        log.debug(f"Manufacturer {manf_name} Does not already exist returning False")
         return False,None
     else:
+        log.debug(f"Manufacturer {manf_name} already exists returning True")
         return True, Manf_ID
 
 
@@ -416,7 +425,8 @@ def AddNewManufacturer(Manf_name, cursor, **kwargs):
     :return: int
         returns new Manf_ID
     """
-
+    log = SetupLogging()  # Sets up logging for this function
+    log.debug(f"Adding new Manufacturer: {Manf_name} to Manufacturers Table")
     manf_dict = {cfg.manufacturer_fld:Manf_name}
     if cfg.userID_fld in kwargs:
         # If a user ID for the manufacturer has been specified
@@ -430,8 +440,10 @@ def AddNewManufacturer(Manf_name, cursor, **kwargs):
     cursor.execute(f"Select * FROM {cfg.MANUFACTURER_TBL_NAME}")
     manf_exists, Manf_id = CheckManfExists(manf_dict[cfg.manufacturer_fld],cursor)
     if manf_exists:
+        log.debug(f"Manufacturer Successfully Inserted! ManfID: {Manf_id}")
         return Manf_id
     else:
+        log.debug(f"Manufacturer still does not exist in Table, something must have gone wrong. returning false")
         return None
 
 def AddFixtureToDB(fixture_dict):
@@ -443,13 +455,16 @@ def AddFixtureToDB(fixture_dict):
         returns True if Fixture Successfully added
     """
     log = SetupLogging()  # Sets up logging for this function
+    log.debug(f"Adding Fixture to Database!")
     cursor, connection = initConnection(cfg.DBFILEPATH)
     # Checks if Manufuacturer already exists
     manf_exists, Manf_id = CheckManfExists(fixture_dict[cfg.manufacturer_fld],cursor)
     if not manf_exists:
         # If the Manufacturer does not already exist
+        log.debug(f"Manufacturer Does not exist, so adding to Manufacturer Database")
         Manf_id = AddNewManufacturer(fixture_dict[cfg.manufacturer_fld],cursor)  # Adds new Manufacturer to DB
     if Manf_id is not None:
+        log.debug(f"Manufacturer already exists, updating fixture dict with Manf ID of {Manf_id}, and removing Manf Name from fixture Dict")
         fixture_dict.update({cfg.manf_ID_fld:Manf_id})
         # Deletes the Manufacturer Name from Fixture Dict so that only the Manf_ID is written to the Fixture DB
         del fixture_dict[cfg.manufacturer_fld]
@@ -458,13 +473,19 @@ def AddFixtureToDB(fixture_dict):
         return False   # Cancels Committing changes to DB and tells Flask operation failed
 
     try:
+        log.debug(f"Inserting Fixture into Fixture Table!")
         # Inserts Fixture into DB
-        InsertRowIntoTable(cursor,cfg.FIXTURE_TBL_NAME,fixture_dict)
+        check = InsertRowIntoTable(cursor,cfg.FIXTURE_TBL_NAME,fixture_dict)
     except Exception as e:
         log.debug(f"Error Inserting Fixture into DB! Aborting")
         log.debug(f"Error Msg: {e}")
         return False, None  # Cancels Committing changes to DB and tells Flask operation failed
-
+    if not check:
+        # If an error occured whilst attempting to insert row
+        log.debug(f"Fixture Not successfully inserted!!! Closing connection and returning False")
+        cursor.close()
+        connection.close()
+        return False, None
     fix_id = cursor.lastrowid  # Gets the FixId for the last inserted Fixture
     log.debug("Successfully Inserted Fixture Into Database saving, DB!")
     cursor.close()
@@ -473,5 +494,6 @@ def AddFixtureToDB(fixture_dict):
     return True, fix_id
 
 if __name__ == '__main__':
+    log = SetupLogging()  # Sets up logging for this function
     fix_data = GetFixtureByID(1)
     log.debug(fix_data)
