@@ -539,9 +539,14 @@ def AddFixtureToDB(fixture_dict):
         return False, None
     fix_id = cursor.lastrowid  # Gets the FixId for the last inserted Fixture
     log.debug("Successfully Inserted Fixture Into Database saving, DB!")
-    cursor.close()
-    connection.commit()  # Commits Changes
-    connection.close()
+    try:
+        cursor.close()
+        connection.commit()  # Commits Changes
+        connection.close()
+    except Exception as e:
+        log.debug(f"Error Closing Connection!")
+        log.debug(f"Erorr Msg: {e}")
+
     return True, fix_id
 
 if __name__ == '__main__':
