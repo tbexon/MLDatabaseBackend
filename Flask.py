@@ -109,6 +109,7 @@ def AddFixture():
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response, 400
     check,fix_id = AddFixtureToDB(fixture_dict)
+    log.debug(f"Check: {check}, {fix_id}")
     if not check:
         # If an error occured whilst inserting fixture
         response = make_response("Error Adding Fixture")
@@ -131,9 +132,10 @@ def AddFixture():
             # Renames Image file to fixture ID
             os.rename(os.path.join(app.config['UPLOAD_FOLDER'], filename),os.path.join(app.config['UPLOAD_FOLDER'], new_filename))
 
-    response = {}
+    response = jsonify({})
     response.headers.add("Access-Control-Allow-Origin", "*")
-    return response,200
+    log.debug(response)
+    return response
 
 def PerformChecks(fixture_dict):
     """
