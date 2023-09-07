@@ -23,6 +23,7 @@ USERS_TBL_NAME = "Users"
 fixture_img_FilePath = "static"  # Folder where all images are stored
 fix_img_API_Dir = "FixImg"
 stock_image_FileName = "StockFixture.png"  # File name of stock image
+prod_lx_logo_FileName = 'ProdLxLogo.png'
 
 # Fixture Table Column Names
 fixture_ID_fld = 'FixID'

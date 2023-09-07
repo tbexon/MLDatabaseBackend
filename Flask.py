@@ -1,7 +1,7 @@
 from flask import Flask,jsonify, request, make_response
 from werkzeug.utils import secure_filename
 import config as cfg
-from Database import GetFixtureByID, GetAllFixtures, GetFixFromSearchString, GetAllManufacturers, AddFixtureToDB
+from Database import GetFixtureByID, GetAllFixtures, GetFixFromSearchString, GetAllManufacturers, AddFixtureToDB, UpdateFixtureReputation
 import os
 import logging
 from concurrent_log_handler import ConcurrentRotatingFileHandler
@@ -137,6 +137,26 @@ def AddFixture():
     log.debug(response)
     return response
 
+@app.route('/Reputation', methods=['POST'])
+def UpdateReputation():
+    """
+    Updates the reputation of a specified fixture
+    """
+    log.debug(f"Update Reputation Request received!")
+    fix_id = request.args.get(cfg.fixture_ID_fld)  # Gets the Fixture ID
+    reputation = request.args.get(cfg.reputation_fld)
+    log.debug(f"FixId: {fix_id}, Reputation: {reputation}")
+    check = UpdateFixtureReputation(fix_id,reputation)
+    if not check:
+        # If an error occured whilst inserting fixture
+        response = make_response("Error Adding Fixture")
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response, 500
+    response = jsonify({})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    log.debug(response)
+    return response
+
 def PerformChecks(fixture_dict):
     """
     Chceks incoming fixture info for errors, and attempts to correct any errors
@@ -208,6 +228,12 @@ def ServeImg(fix_id):
     else:
         log.debug(f"No Fixture image found updating to {cfg.stock_image_FileName}")
         return app.send_static_file(cfg.stock_image_FileName)
+
+@app.route("/ProdLxLogo")  #{cfg.fix_img_API_Dir}
+def ServeLogo():
+        fp = os.path.join(os.getcwd(), cfg.fixture_img_FilePath,cfg.prod_lx_logo_FileName)
+        log.debug(f"Serving ProdLxLogo {fp}")
+        return app.send_static_file(cfg.prod_lx_logo_FileName)
 
 if __name__ == '__main__':
 
