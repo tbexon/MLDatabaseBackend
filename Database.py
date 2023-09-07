@@ -549,6 +549,59 @@ def AddFixtureToDB(fixture_dict):
 
     return True, fix_id
 
+def UpdateFixtureReputation(fix_id,reputation):
+    """
+    Updates the specified fixtures reputation score
+    :param fix_id: int
+        fixture id of fixture to update
+    :param reputation: int
+        new reputation score
+    :return:
+    """
+    log = SetupLogging()  # Sets up logging for this function
+    log.debug(f"Updating Fixture Reputation")
+    cursor, connection = initConnection(cfg.DBFILEPATH)
+    check = UpdateRowInTable(cursor,cfg.FIXTURE_TBL_NAME,cfg.reputation_fld,cfg.fixture_ID_fld,fix_id,reputation)
+    if check:
+        log.debug(f"Saving and closing DB connection returning True")
+        cursor.close()
+        connection.commit()  # Commits Changes
+        connection.close()
+        return True
+    else:
+        log.debug(f"Failed to update row, returning False")
+        return False
+
+def UpdateRowInTable(cursor,tbl_name,col_name,id_col_name,id,value):
+    """
+    Updates the specified Row in the specified table
+    :param cursor: obj
+        cursor object for accessing DB
+    :param tbl_name: str
+        name of table to update
+    :param col_name: str
+        Name of Column to update
+    :param id: int
+        row id
+    :param value: str, int
+        value to update
+    :return: bool
+        returns True if successful
+    """
+    log = SetupLogging()  # Sets up logging for this function
+    log.debug(f"Updating {col_name} field with {value} in {tbl_name} table")
+
+    sql = f"UPDATE {tbl_name} SET {col_name} = {value} WHERE {id_col_name} = {id};"
+    log.debug(sql)
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        print("Error updating row in table!!")
+        print(e)
+        return False
+    return True
+
+
 if __name__ == '__main__':
     log = SetupLogging()  # Sets up logging for this function
     fix_data = GetFixtureByID(1)
