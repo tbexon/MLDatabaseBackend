@@ -6,7 +6,7 @@ import logging
 
 def SetupLogging():
     log = logging.getLogger(cfg.MainLogName)  # Sets up logging
-    log.debug(f"Started in DB File")
+    log.debug(f"Logger started in DB File")
     return log
 def initConnection(DBFILEPATH):
     """
