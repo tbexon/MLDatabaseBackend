@@ -37,13 +37,29 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}  # File extensions allowed for image
 log = setupLogging()
 log.debug("Logging Setup!")
 
-
 app = Flask(__name__)  # Create Flask Server
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route("/Fixture",methods=['GET'])
+def checkAPIKey(api_key):
+    """
+    Checks if API Key is in Allowed List
+    :param api_key: str
+        Api Key to check
+    :return: bool
+    """
+    if api_key not in cfg.ALLOWED_API_KEYS:
+        log.debug(f"Invalid API Key Entered rejecting request!")
+        return False
+    else:
+        return True
+
+@app.route(f"{cfg.MLPRIVAPIURL}Fixture",methods=['GET'])
 def GetFixture():
     log.debug("Get Fixture API Call Received!")
+    api_key = request.headers.get("X-Api-Key")
+    if checkAPIKey(api_key):
+        # If Api Key is not Within ALlowed API List
+        return 'Unauthorised API Key!',401
     params = request.args.to_dict()  # Converts params from GET request to dict
 
     fix_ID = request.args.get(cfg.fixture_ID_fld)  # Attempts to get the fixture ID if it has been included in request
@@ -76,9 +92,13 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route("/AddFixture", methods=['POST'])
+@app.route(f"{cfg.MLPRIVAPIURL}AddFixture", methods=['POST'])
 def AddFixture():
     log.debug("Add Fixture API Call Received!")
+    api_key = request.headers.get("X-Api-Key")
+    if checkAPIKey(api_key):
+        # If Api Key is not Within ALlowed API List
+        return 'Unauthorised API Key!',401
     log.debug(request.__dict__)
 
     # fixture_dict = request.get_json()  # Gets JSON Body as dict
@@ -137,12 +157,16 @@ def AddFixture():
     log.debug(response)
     return response
 
-@app.route('/Reputation', methods=['POST'])
+@app.route(f"{cfg.MLPRIVAPIURL}Reputation", methods=['POST'])
 def UpdateReputation():
     """
     Updates the reputation of a specified fixture
     """
     log.debug(f"Update Reputation Request received!")
+    api_key = request.headers.get("X-Api-Key")
+    if checkAPIKey(api_key):
+        # If Api Key is not Within ALlowed API List
+        return 'Unauthorised API Key!',401
     fix_id = request.args.get(cfg.fixture_ID_fld)  # Gets the Fixture ID
     reputation = request.args.get(cfg.reputation_fld)
     log.debug(f"FixId: {fix_id}, Reputation: {reputation}")
@@ -203,9 +227,13 @@ def CheckIfInstAlreadyExists(InstType):
         return True
 
 
-@app.route("/Manufacturer", methods=['GET'])
+@app.route(f"{cfg.MLPRIVAPIURL}Manufacturer", methods=['GET'])
 def GetManufacturers():
     log.debug("API Call Received to /Manufactuer!")
+    api_key = request.headers.get("X-Api-Key")
+    if checkAPIKey(api_key):
+        # If Api Key is not Within ALlowed API List
+        return 'Unauthorised API Key!',401
     manf_id = request.args.get(cfg.manf_ID_fld)  # Attempts to get the Manufacturers ID if it has been included in request
     if manf_id:
         pass
@@ -216,7 +244,7 @@ def GetManufacturers():
     return response
 
 
-@app.route("/FixImg/<int:fix_id>")  #{cfg.fix_img_API_Dir}
+@app.route(f"{cfg.MLPRIVAPIURL}FixImg/<int:fix_id>")  #{cfg.fix_img_API_Dir}
 def ServeImg(fix_id):
 
     img_FilePath = os.path.join(os.getcwd(), cfg.fixture_img_FilePath)
@@ -229,7 +257,7 @@ def ServeImg(fix_id):
         log.debug(f"No Fixture image found updating to {cfg.stock_image_FileName}")
         return app.send_static_file(cfg.stock_image_FileName)
 
-@app.route("/ProdLxLogo")  #{cfg.fix_img_API_Dir}
+@app.route(f"{cfg.MLPRIVAPIURL}ProdLxLogo")  #{cfg.fix_img_API_Dir}
 def ServeLogo():
         fp = os.path.join(os.getcwd(), cfg.fixture_img_FilePath,cfg.prod_lx_logo_FileName)
         log.debug(f"Serving ProdLxLogo {fp}")
