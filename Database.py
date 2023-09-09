@@ -308,7 +308,7 @@ def GetFixtureImgURL(fix_id):
     :return: str
     """
     final_path = ''
-    final_path = os.path.join(cfg.MLBACKENDURL, cfg.fix_img_API_Dir, f"{fix_id}")
+    final_path = os.path.join(cfg.MLBACKENDURL,cfg.MLPRIVAPIURL_WITHOUTSLASH, cfg.fix_img_API_Dir, f"{fix_id}")
     # img_FilePath = os.path.join(os.getcwd(),cfg.fixture_img_FilePath)
     # test_FP = os.path.join(img_FilePath,f"{fix_id}.png")
     # if os.path.isfile(test_FP) is True:
