@@ -56,8 +56,10 @@ def checkAPIKey(api_key):
 @app.route(f"{cfg.MLPRIVAPIURL}Fixture",methods=['GET'])
 def GetFixture():
     log.debug("Get Fixture API Call Received!")
-    api_key = request.headers.get("X-Api-Key")
-    if checkAPIKey(api_key):
+    api_key = request.headers.get(cfg.API_KEY_FLD)
+    log.debug(f"Headers: {request.headers}")
+    log.debug(f"APi Key: {api_key}")
+    if not checkAPIKey(api_key):
         # If Api Key is not Within ALlowed API List
         return 'Unauthorised API Key!',401
     params = request.args.to_dict()  # Converts params from GET request to dict
@@ -95,8 +97,8 @@ def allowed_file(filename):
 @app.route(f"{cfg.MLPRIVAPIURL}AddFixture", methods=['POST'])
 def AddFixture():
     log.debug("Add Fixture API Call Received!")
-    api_key = request.headers.get("X-Api-Key")
-    if checkAPIKey(api_key):
+    api_key = request.headers.get(cfg.API_KEY_FLD)
+    if not checkAPIKey(api_key):
         # If Api Key is not Within ALlowed API List
         return 'Unauthorised API Key!',401
     log.debug(request.__dict__)
@@ -126,14 +128,14 @@ def AddFixture():
     check, fixture_dict = PerformChecks(fixture_dict)  # Checks Fixture info for problems
     if not check:
         response = make_response("Error Adding Fixture")
-        response.headers.add("Access-Control-Allow-Origin", "*")
+        # response.headers.add("Access-Control-Allow-Origin", "*")
         return response, 400
     check,fix_id = AddFixtureToDB(fixture_dict)
     log.debug(f"Check: {check}, {fix_id}")
     if not check:
         # If an error occured whilst inserting fixture
         response = make_response("Error Adding Fixture")
-        response.headers.add("Access-Control-Allow-Origin", "*")
+        # response.headers.add("Access-Control-Allow-Origin", "*")
         return response, 500
     if 'file' in request.files:
         log.debug(f"Image file detected in request adding image")
@@ -153,7 +155,7 @@ def AddFixture():
             os.rename(os.path.join(app.config['UPLOAD_FOLDER'], filename),os.path.join(app.config['UPLOAD_FOLDER'], new_filename))
 
     response = jsonify({})
-    response.headers.add("Access-Control-Allow-Origin", "*")
+    # response.headers.add("Access-Control-Allow-Origin", "*")
     log.debug(response)
     return response
 
@@ -163,8 +165,8 @@ def UpdateReputation():
     Updates the reputation of a specified fixture
     """
     log.debug(f"Update Reputation Request received!")
-    api_key = request.headers.get("X-Api-Key")
-    if checkAPIKey(api_key):
+    api_key = request.headers.get(cfg.API_KEY_FLD)
+    if not checkAPIKey(api_key):
         # If Api Key is not Within ALlowed API List
         return 'Unauthorised API Key!',401
     fix_id = request.args.get(cfg.fixture_ID_fld)  # Gets the Fixture ID
@@ -174,10 +176,10 @@ def UpdateReputation():
     if not check:
         # If an error occured whilst inserting fixture
         response = make_response("Error Adding Fixture")
-        response.headers.add("Access-Control-Allow-Origin", "*")
+        # response.headers.add("Access-Control-Allow-Origin", "*")
         return response, 500
     response = jsonify({})
-    response.headers.add("Access-Control-Allow-Origin", "*")
+    # response.headers.add("Access-Control-Allow-Origin", "*")
     log.debug(response)
     return response
 
@@ -230,8 +232,8 @@ def CheckIfInstAlreadyExists(InstType):
 @app.route(f"{cfg.MLPRIVAPIURL}Manufacturer", methods=['GET'])
 def GetManufacturers():
     log.debug("API Call Received to /Manufactuer!")
-    api_key = request.headers.get("X-Api-Key")
-    if checkAPIKey(api_key):
+    api_key = request.headers.get(cfg.API_KEY_FLD)
+    if not checkAPIKey(api_key):
         # If Api Key is not Within ALlowed API List
         return 'Unauthorised API Key!',401
     manf_id = request.args.get(cfg.manf_ID_fld)  # Attempts to get the Manufacturers ID if it has been included in request
@@ -240,7 +242,7 @@ def GetManufacturers():
     else:
         manf_data_dict = GetAllManufacturers()
     response = jsonify(manf_data_dict)  # Converts Manufacturers data into json object
-    response.headers.add("Access-Control-Allow-Origin", "*")
+    # response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
