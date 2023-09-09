@@ -1,13 +1,22 @@
+import os
+from dotenv import load_dotenv
 # Global Variables
+
+load_dotenv()  # Loads environment variables
 
 DBHOSTNAME = 'mldatabase.coqumob6opcg.eu-north-1.rds.amazonaws.com'
 DBPORT = 3306
 DBUSERNAME = 'admin'
-DBPW = 'W1nd0w2_s3v3r'
+DBPW = os.environ.get('ML_DB_PW')
 DBNAME = 'MLDatabase'
 DBFILEPATH = f"DB/{DBNAME}"
 
-MLBACKENDURL = "http://ec2-51-20-5-169.eu-north-1.compute.amazonaws.com/"  # URL for the Back End Web server
+MLBACKENDURL = "http://api.prod-lx.com/"  # URL for the Back End Web server
+
+MLPRIVAPIURL = '/Pri/v1/'
+MLPRIVAPIURL_WITHOUTSLASH = 'Pri/v1/'
+PROD_LX_API_KEY = os.getenv('PROD_LX_API_KEY')  # Gets Prod Lx Internal API Key from environmental variables
+ALLOWED_API_KEYS = [PROD_LX_API_KEY]  # List of Allowed API keys that can access private API calls
 
 MLBACKENDLOGPATH = "/MLBackend/logs/MLBackend Logs/MLBackend Log.log"
 MainLogName = "MLBackend"
