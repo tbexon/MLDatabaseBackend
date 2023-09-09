@@ -11,12 +11,14 @@ DBPW = os.environ.get('ML_DB_PW')
 DBNAME = 'MLDatabase'
 DBFILEPATH = f"DB/{DBNAME}"
 
-MLBACKENDURL = "http://api.prod-lx.com/"  # URL for the Back End Web server
+MLBACKENDURL = "https://api.prod-lx.com/"  # URL for the Back End Web server
 
 MLPRIVAPIURL = '/Pri/v1/'
 MLPRIVAPIURL_WITHOUTSLASH = 'Pri/v1/'
 PROD_LX_API_KEY = os.getenv('PROD_LX_API_KEY')  # Gets Prod Lx Internal API Key from environmental variables
 ALLOWED_API_KEYS = [PROD_LX_API_KEY]  # List of Allowed API keys that can access private API calls
+
+API_KEY_FLD = "X-API-KEY"
 
 MLBACKENDLOGPATH = "/MLBackend/logs/MLBackend Logs/MLBackend Log.log"
 MainLogName = "MLBackend"
